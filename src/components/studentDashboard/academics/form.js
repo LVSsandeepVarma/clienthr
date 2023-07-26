@@ -88,7 +88,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
 
     useEffect(() => {
         setInitialValues({
-          academics: [
+            academics: [
             {
               institution_name: `${userInfo?.academics?.institution_name || ""}`,
               institution_board: `${userInfo?.academics?.institution_board || ""}`,
@@ -189,7 +189,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
         <>
               <Form>
                 <FieldArray name="academics">
-                    {/* {({insert, remove, push}) =>{ */}
+                    {/* {({ remove, push}) =>{ */}
                         <>
                         {values.academics.map((academic, index) => (
               <div key={index}>
@@ -460,7 +460,9 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
               {/* </div> */}
             {/* //   ))} */}
               </>
-            {/* //   }} */}
+                {/* //     }
+                // } */}
+            
               </FieldArray>
             </Form>
         </>
