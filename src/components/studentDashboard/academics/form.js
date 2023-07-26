@@ -6,52 +6,36 @@ import TagsInput from "react-tagsinput";
 import "react-tagsinput/react-tagsinput.css";
 import axios from "axios";
 
-const validationSchema = Yup.object().shape({
-    institution_name: Yup.string().required("Institution name required"),
-    institution_board: Yup.string()
+const academicSchema = Yup.object().shape({
+  institution_name: Yup.string().required("Institution name is required"),
+  institution_board: Yup.string()
     .matches(/^[A-Za-z]+$/, "Institution board should contain only alphabets")
-    .required("Institution board required"),
-  //   phoneCode: Yup.string().required("Phone Code is required"),
-
+    .required("Institution board is required"),
   stream: Yup.string().required("Stream is required"),
-  passed_year: Yup.string()
-    .required("Passed year required"),
-    total_marks: Yup.string().required("total marks required"),
-    obtained_marks: Yup.string()
-    .required("Obtained marks required"),
-    registration_no: Yup.string()
-    .matches(/^[a-zA-Z0-9]+$/, "Registration no should contain only alphabets")
-    .required("Registration no required"),
-    registration_year: Yup.string()
-    .matches(
-      /^[a-zA-Z0-9]+$/,
-      "Registration year should contain only alphanumeric characters"
-    )
-    .required("Citizenship number required"),
-    city: Yup.string()
-    .matches(
-        /^[A-Za-z]+$/,
-        "City  should contain only alphabets"
-    )
-    .required("Tax number required"),
-    state: Yup.string()
-    .matches(
-        /^[A-Za-z]+$/,
-        "State  should contain only alphabets"
-    )
-    .required("Passport number required"),
-    country: Yup.array().of(
-    Yup.string().matches(
-      /^[A-Za-z]+$/,
-      "Country  should contain only alphabets"
-    )
-  ),
-  zipcode: Yup.array().of(
-    Yup.string().matches(
-      /^[0-9]+$/,
-      "Zipcode should contain only numbers"
-    )
-  ),
+  passed_year: Yup.string().required("Passed year is required"),
+  total_marks: Yup.string().required("Total marks is required"),
+  obtained_marks: Yup.string().required("Obtained marks is required"),
+  registration_no: Yup.string()
+    .matches(/^[a-zA-Z0-9]+$/, "Registration no should contain only alphanumeric characters")
+    .required("Registration no is required"),
+  registration_year: Yup.string()
+    .matches(/^[a-zA-Z0-9]+$/, "Registration year should contain only alphanumeric characters")
+    .required("Registration year is required"),
+  city: Yup.string()
+    .matches(/^[A-Za-z]+$/, "City should contain only alphabets")
+    .required("City is required"),
+  state: Yup.string()
+    .matches(/^[A-Za-z]+$/, "State should contain only alphabets")
+    .required("State is required"),
+  country: Yup.string().matches(/^[A-Za-z]+$/, "Country should contain only alphabets"),
+  zipcode: Yup.string().matches(/^[0-9]+$/, "Zipcode should contain only numbers"),
+});
+
+
+
+const validationSchema = Yup.object().shape({
+  academics: Yup.array().of(academicSchema),
+  // Add other validation rules for other fields if needed
 });
 
 
