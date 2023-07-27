@@ -174,12 +174,22 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
     // console.log(values);
     const formData = {
       candidate_id: candidate_id,
+<<<<<<< Updated upstream
       dob: values.dateOfBirth,
       skills: values.skills,
       mother_name:values.mothersName,
       father_name: values.fathersName,
       home_phone: values.homePhoneNumber,
       place_birth: values.birthPlace,
+=======
+      dob: values?.dateOfBirth,
+      skills: values?.skills,
+      id:values?.id,
+      mother_name: values?.mothersName,
+      father_name: values?.fathersName,
+      home_phone: values?.homePhoneNumber,
+      place_birth: values?.birthPlace,
+>>>>>>> Stashed changes
       email_code: values?.email,
       citizenship_id: values?.citizenshipId,
       tax_id: values?.taxId,
@@ -188,7 +198,7 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
       passport_expiry: values?.passportExpiryDate,
       languages_speak: values?.languagesSpeak,
       languages_write: values?.languages,
-      blood_group: values.bloodGroup,
+      blood_group: values?.bloodGroup,
     };
     const token = localStorage.getItem("token");
     try {
