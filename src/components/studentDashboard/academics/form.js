@@ -49,18 +49,18 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
   const [initialValues, setInitialValues] = useState({
     academics: [
       {
-        institution_name: "",
-        institution_board: "",
-        stream: "",
-        passed_year: "",
-        total_marks: "",
-        obtained_marks: "",
-        registration_no: "",
-        registration_year: "",
-        city: "",
-        state: "",
-        country: "",
-        zipcode: "",
+        institution_name: `${userInfo?.academics?.institution_name || ""}`,
+        institution_board: `${userInfo?.academics?.institution_board || ""}`,
+        stream: `${userInfo?.academics?.stream || ""}`,
+        passed_year: `${userInfo?.academics?.passed_year || ""}`,
+        total_marks: `${userInfo?.academics?.total_marks || ""}`,
+        obtained_marks: `${userInfo?.academics?.obtained_marks || ""}`,
+        registration_no: `${userInfo?.academics?.registration_no || ""}`,
+        registration_year: `${userInfo?.academics?.registrastion_year || ""}`,
+        city: `${userInfo?.academics?.city || ""}`,
+        state: `${userInfo?.academics?.state || ""}`,
+        country: `${userInfo?.academics?.country || ""}`,
+        zipcode: `${userInfo?.academics?.zipcode || ""}`,
       },
     ],
   });
@@ -175,8 +175,9 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                 <FieldArray name="academics">
                     {/* {({ remove, push}) =>{ */}
                         <>
+
                         {values.academics.map((academic, index) => (
-              <div key={index}>
+              <div className="border-solid border-2 border-slate-600 p-1 mt-2 " key={index}>
                 <div className="grid grid-cols-4 gap-x-5 gap-y-3">
                   <div className="">
                     <label htmlFor={`institution_name_${index}`} className="form-label">
@@ -407,15 +408,17 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                     </p>
                   </div>
                 </div>
-                {index !==0 && <button type="button" onClick={()=> removeAcademicDetail(setFieldValue, index-1)}
+                {index !==0 && <a className="text-red-900 font-bold" type="button" onClick={()=> removeAcademicDetail(setFieldValue, index-1)}
                 >
                       Delete Academic
-                    </button>}
+                    </a>}
                   </div>
+                  
                 ))}
-                <button type="button" onClick={() => addAcademicDetail(setFieldValue)}>
+                <a className="text-blue-900 font-bold"
+                     type="button" onClick={() => addAcademicDetail(setFieldValue)}>
                   Add Academic
-                </button>
+                </a>
                 
                 <div
                   className="!flex w-[100%]"
