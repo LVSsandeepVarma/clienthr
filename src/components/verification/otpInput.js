@@ -12,8 +12,8 @@ export default function OtpInput() {
   const handleOtpVerification = async () => {
     setOtpError("");
     setOtpVerifySuccessMsg("");
-    setApiErr([])
-    
+    setApiErr([]);
+
     console.log("verified", otpValues);
     const otpString = otpValues.join("");
     console.log(otpString);
@@ -23,26 +23,34 @@ export default function OtpInput() {
       try {
         const response = await axios.post(
           "https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/auth/verify-otp",
-          { mobile: mobile, otp: otpString, token:window.location.pathname?.split("/candidate/verify/")[1] }
+          {
+            mobile: mobile,
+            otp: otpString,
+            token: window.location.pathname?.split("/")[3],
+          }
         );
         if (response?.data?.status) {
           setOtpVerifySuccessMsg(response?.data?.message);
-          localStorage.setItem("token",response.data?.access_token)
-          setTimeout(()=>{
-            
-            navigate("/candidate/dashboard")
-          },2000)
-          
+          localStorage.setItem("token", response.data?.access_token);
+          setTimeout(() => {
+            navigate("/candidate/dashboard");
+          }, 2000);
         } else {
           setApiErr([response?.data?.errors]);
         }
       } catch (err) {
-        setApiErr([err?.response?.data?.errors]);
+        console.log(err?.response?.data?.message)
+        if(err?.response?.data?.errors){
+          setApiErr([err?.response?.data?.errors]);
+        }else{
+          setApiErr([{otpError:err?.response?.data?.message}]);
+          setOTPValues(["", "", "", ""])
+        }
       }
     } else {
       setOtpError("otp required");
+      // setOTPValues(["", "", "", ""])
     }
-
     
   };
 
@@ -65,12 +73,51 @@ export default function OtpInput() {
   };
 
   const handleKeyDown = (index, event) => {
-    // Move focus to the previous input box on backspace
-    if (event.key === "Backspace" && index > 0) {
-      const prevInput = event.target.previousSibling;
-      if (prevInput) {
-        prevInput.focus();
+    // Clear the current box value on backspace
+    if (event.key === "Backspace") {
+      event.preventDefault(); // Prevent the default behavior of Backspace (clearing the previous input)
+
+      // Clear the current input value
+      setOTPValues((prevValues) => {
+        const newValues = [...prevValues];
+        newValues[index] = "";
+        return newValues;
+      });
+
+      // Move focus to the previous input box if not the first box
+      if (index > 0) {
+        const prevInput = event.target.previousSibling;
+        if (prevInput) {
+          prevInput.focus();
+        }
       }
+    }
+  };
+
+  const handlePaste = (event) => {
+    const pastedData = event.clipboardData.getData("text/plain");
+
+    if (pastedData.length === 0) return;
+
+    // Check if the pasted data contains non-numeric characters
+    if (!/^\d+$/.test(pastedData)) {
+      event.preventDefault();
+      return;
+    }
+
+    const newValues = [...otpValues];
+
+    // Extract individual digits from the pasted data and update the OTP values
+    for (let i = 0; i < pastedData.length && i < newValues.length; i++) {
+      newValues[i] = pastedData.charAt(i);
+    }
+
+    setOTPValues(newValues);
+
+    // Move focus to the last input box
+    const lastInput = event.target.nextSibling.nextSibling.nextSibling;
+    if (lastInput) {
+      lastInput.focus();
     }
   };
 
@@ -88,6 +135,7 @@ export default function OtpInput() {
               className="w-12 h-12 text-center border border-gray-400 rounded focus:border-blue-500 focus:outline-none ml-2 mt-2 mb-2"
               onChange={(e) => handleChange(index, e)}
               onKeyDown={(e) => handleKeyDown(index, e)}
+              onPaste={handlePaste}
             />
           ))}
         </div>

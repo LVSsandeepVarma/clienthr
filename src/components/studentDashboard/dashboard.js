@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef} from "react";
+import React, { useEffect, useState, useRef } from "react";
 import TomSelect from "tom-select";
 import $ from "jquery";
 import CreatableSelect from "react-select/creatable";
@@ -6,6 +6,8 @@ import BioForm from "./BioDataForm/form";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AcademicForm from "./academics/form";
+import ExperienceForm from "./experience/form";
+import AddressForm from "./address/form";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("tab1");
@@ -13,38 +15,53 @@ export default function Dashboard() {
   const [errors, setErrorObj] = useState();
   const [userInfoi, setUserInfo] = useState();
   const containerRef = useRef();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [interviewStatus, setInterviewStatus] = useState();
+  const [userInterviewScheduleResponse, setUserInterviewSechduleResponse] = useState();
+  const [userInterviewReScheduleResponse, setUserInterviewReSechduleResponse] = useState()
 
 
-  useEffect(()=>{
-
-    const fetchUserInfo=async()=>{
-      if (containerRef.current && containerRef.current.scrollWidth > containerRef.current.clientWidth) {
-        containerRef.current.classList.add('show-tooltip');
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (
+        containerRef.current &&
+        containerRef.current.scrollWidth > containerRef.current.clientWidth
+      ) {
+        containerRef.current.classList.add("show-tooltip");
       }
-      try{
-        const accessToken = localStorage.getItem("token")
-        const response = await axios.get("https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/get-user-info",{headers: {"access-token":accessToken, "Content-Type":"application/json"}})
-        console.log(response?.data)
-        if(response?.data?.status){
-          setUserInfo(response?.data?.data)
-        }else{
+      try {
+        const accessToken = localStorage.getItem("token");
+        const response = await axios.get(
+          "https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/get-user-info",
+          {
+            headers: {
+              "access-token": accessToken,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log(response?.data);
+        if (response?.data?.status) {
+          setUserInfo(response?.data?.data);
+        } else {
           localStorage.removeItem("token");
-        // navigate("/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww=")
+          navigate(
+            "/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww="
+          );
         }
-        
-      }catch(err){
-        console.log(err,"err")
+      } catch (err) {
+        console.log(err, "err");
         localStorage.removeItem("token");
-        navigate("/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww=")
-        
+        navigate(
+          "/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww="
+        );
       }
+    };
 
-    }
-
-    fetchUserInfo()
-  },[])
-
+    fetchUserInfo();
+    const storedinterviewStatus = localStorage.getItem("interviewStatus");
+    setInterviewStatus(storedinterviewStatus)
+  }, []);
 
   const [items, setItems] = useState([]);
   const handleChange = (items) => {
@@ -52,13 +69,191 @@ export default function Dashboard() {
     setItems(items);
   };
 
-  const handleSavePersonalDetails=()=>{
-    const values = {};
 
+
+  const handleAcceptInterview=async()=>{
+    try{
+      const token = localStorage.getItem("token")
+      const response = await axios.post("https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/interview-accept",{candidate_id:userInfoi?.candidate?.id},{headers:{
+        "access-token":token
+      }})
+      if(response.data?.status){
+        localStorage.setItem("interviewStatus","blank")
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+  const handleRejectInterview=async()=>{
+    try{
+      const token = localStorage.getItem("token")
+      const response = await axios.post("https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/request-to-postpone",{candidate_id:userInfoi?.candidate?.id},{headers:{
+        "access-token":token
+      }})
+      if(response.data?.status){
+        localStorage.setItem("interviewStatus","blank")
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+  const handleRescheduleInterview=async()=>{
+    try{
+      const token = localStorage.getItem("token")
+      const response = await axios.post("https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/request-to-postpone",{candidate_id:userInfoi?.candidate?.id},{headers:{
+        "access-token":token
+      }})
+      if(response.data?.status){
+        localStorage.setItem("interviewStatus","blank")
+      }
+    }catch(err){
+      console.log(err)
+    }
   }
 
   return (
     <>
+{interviewStatus=="yes" &&  <div
+        id="static-backdrop-modal-previews"
+        class="modal centered overflow-y-auto show mt-0 ml-0 pl-0 z-[10000]"
+        tabindex="-1"
+        data-tw-backdrop="static"
+        aria-hidden="false"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <a data-tw-dismiss="modal" href="javascript:;">
+              {" "}
+              <i data-lucide="x" class="w-8 h-8 text-slate-400"></i>{" "}
+            </a>
+            <div class="modal-body p-0">
+              <div class="p-5 text-center">
+                <i
+                  data-lucide="check-circle"
+                  class="w-16 h-16 text-success mx-auto mt-3"
+                ></i>
+                <div class="text-3xl mt-5">Confirm Your Interview</div>
+              </div>
+              <div class="px-5 pb-8 text-center">
+                {/* <button
+                  type="button"
+                  class="btn btn-primary w-24"
+                >
+                  Ok
+                </button> */}
+                <button
+                  type="submit"
+                  data-tw-dismiss="modal"
+                  className="btn bg-[rgba(13,148,136,1)] text-white w-24 mr-1 mb-2"
+                  onClick={handleAcceptInterview}
+                >
+                  Confirm
+                </button>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>}
+          
+
+          {interviewStatus=="no" &&
+            <div
+        id="static-backdrop-modal-previews"
+        class="modal centered overflow-y-auto show mt-0 ml-0 pl-0 z-[10000]"
+        tabindex="-1"
+        data-tw-backdrop="static"
+        aria-hidden="false"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <a data-tw-dismiss="modal" href="javascript:;">
+              {" "}
+              <i data-lucide="x" class="w-8 h-8 text-slate-400"></i>{" "}
+            </a>
+            <div class="modal-body p-0">
+              <div class="p-5 text-center">
+                <i
+                  data-lucide="check-circle"
+                  class="w-16 h-16 text-success mx-auto mt-3"
+                ></i>
+                <div class="text-3xl mt-5">Confirm Your Interview</div>
+              </div>
+              <div class="px-5 pb-8 text-center">
+                {/* <button
+                  type="button"
+                  class="btn btn-primary w-24"
+                >
+                  Ok
+                </button> */}
+                <button
+                  type="submit"
+                  data-tw-dismiss="modal"
+                  className="btn bg-[rgba(13,148,136,1)] text-white w-24 mr-1 mb-2"
+                  onClick={handleAcceptInterview}
+                >
+                  Yes
+                </button>
+                <button
+                  type="submit"
+                  className="btn bg-[rgba(200,0,0,1)] text-white w-24 mr-1 mb-2"
+                  // data-tw-toggle="modal"
+                  data-tw-dismiss="modal"
+          // data-tw-target="#static-backdrop-modal-preview"
+          onClick={()=>setUserInterviewSechduleResponse("no")}
+                >
+                  No
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      }
+      
+      {(userInterviewScheduleResponse) && 
+      <div
+        id="static-backdrop-modal-previews"
+        class="modal centered overflow-y-auto show mt-0 ml-0 pl-0 z-[10000]"
+        data-tw-backdrop="static"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        {" "}
+        <div class="modal-dialog">
+          {" "}
+          <div class="modal-content">
+            {" "}
+            <div class="modal-body px-5 py-10">
+              {" "}
+              <div class="text-center">
+                {" "}
+                <div class="text-3xl mt-5">Reschedule Your Interview</div>
+                <button
+                  type="submit"
+                  data-tw-dismiss="modal"
+                  className="btn bg-[rgba(13,148,136,1)] text-white w-24 mr-1 mb-2"
+                  onClick={handleRescheduleInterview}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  className="btn bg-[rgba(200,0,0,1)] text-white w-24 mr-1 mb-2"
+                  data-tw-dismiss="modal"
+                  onClick={handleRejectInterview}
+                >
+                  Noo
+                </button>
+                
+              </div>{" "}
+            </div>{" "}
+          </div>{" "}
+        </div>{" "}
+      </div>
+      }
       <div className="flex justify-center container">
         {/* <!-- BEGIN: Content --> */}
         <div className="wrapper">
@@ -214,7 +409,7 @@ export default function Dashboard() {
                             />
                           </div>
                           <div className="w-36 truncate ml-3">
-                            John Travolta
+                            {userInfoi?.candidate?.lname}
                           </div>
                           <div className="ml-auto w-36 truncate text-slate-500 text-xs text-right">
                             johntravolta@left4code.com
@@ -474,10 +669,10 @@ export default function Dashboard() {
                 </div>
                 <div className="hidden md:block ml-3">
                   <div className="max-w-[7rem] truncate font-medium">
-                    John Travolta
+                    {userInfoi?.candidate?.fname}
                   </div>
                   <div className="text-xs text-slate-400">
-                    Frontend Engineer
+                    {userInfoi?.candidate?.position}
                   </div>
                 </div>
               </div>
@@ -574,6 +769,8 @@ export default function Dashboard() {
                     {activeTab == "tab1" && (
                       <div className="w-2 h-2 bg-pending rounded-full"></div>
                     )}
+                    {(activeTab !== "tab1" && userInfoi?.biodata) && <div className="w-2 h-2 bg-success rounded-full mr-3"></div>}
+                    {(activeTab !== "tab1" && !userInfoi?.biodata) &&  <div className="w-2 h-2 bg-warning rounded-full mr-3"></div>}
                     <i className="w-4 h-4 mr-2" data-lucide="mail"></i> Personal
                     Details{" "}
                   </button>
@@ -598,6 +795,8 @@ export default function Dashboard() {
                     {activeTab == "tab2" && (
                       <div className="w-2 h-2 bg-pending rounded-full"></div>
                     )}
+                    {(activeTab !== "tab2" && userInfoi?.academic?.length>0) && <div className="w-2 h-2 bg-success rounded-full mr-3"></div>}
+                    {(activeTab !== "tab2" && userInfoi?.academic?.length==0) &&  <div className="w-2 h-2 bg-warning rounded-full mr-3"></div>}
                     <i
                       className="w-4 h-4 mr-2"
                       onClick={() => {
@@ -628,6 +827,8 @@ export default function Dashboard() {
                     {activeTab == "tab3" && (
                       <div className="w-2 h-2 bg-pending rounded-full"></div>
                     )}
+                    {(activeTab !== "tab3" && userInfoi?.experience?.length>0) && <div className="w-2 h-2 bg-success rounded-full mr-3"></div>}
+                    {(activeTab !== "tab3" && userInfoi?.experience?.length==0) &&  <div className="w-2 h-2 bg-warning rounded-full mr-3"></div>}
                     <i className="w-4 h-4 mr-2" data-lucide="inbox"></i>{" "}
                     Professional Experience{" "}
                   </button>
@@ -652,9 +853,11 @@ export default function Dashboard() {
                     {activeTab == "tab4" && (
                       <div className="w-2 h-2 bg-pending rounded-full"></div>
                     )}
-                    <i className="w-4 h-4 mr-2" data-lucide="inbox"></i> Skills{" "}
+                    {(activeTab !== "tab4" && userInfoi?.address?.length>0) && <div className="w-2 h-2 bg-success rounded-full mr-3"></div>}
+                    {(activeTab !== "tab4" && userInfoi?.address?.length==0) &&  <div className="w-2 h-2 bg-warning rounded-full mr-3"></div>}
+                    <i className="w-4 h-4 mr-2" data-lucide="inbox"></i> Address{" "}
                   </button>
-                  <button
+                  {/* <button
                     id="ientification"
                     role="presentation"
                     data-tw-toggle="pill"
@@ -677,17 +880,48 @@ export default function Dashboard() {
                     )}
                     <i className="w-4 h-4 mr-2" data-lucide="inbox"></i>{" "}
                     Identification{" "}
-                  </button>
+                  </button> */}
                 </div>
-                <hr className="mt-2"/>
-                <div > 
-                <div className="flex items-center mt-4"> <i data-lucide="clipboard" className="w-4  h-4 text-slate-500 mr-2"></i> First Name : {userInfoi?.candidate?.fname} </div>
-                <div className="flex items-center mt-4"> <i data-lucide="clipboard" className="w-4 h-4 text-slate-500 mr-2"></i> Last-Name : {userInfoi?.candidate?.lname} </div>
-                <div className="group" >
-                <div className="flex items-center break-all mt-4 " ref={containerRef}> <i data-lucide="clipboard" className="w-4 h-4 !text-sm text-slate-500 mr-2"></i> Email: {userInfoi?.candidate?.email}</div>
-                {}
-                </div>
-                <div className="flex items-center mt-4"> <i data-lucide="clipboard" className="w-4 h-4 text-slate-500 mr-2"></i> Phone Number: {userInfoi?.candidate?.mobile} </div>
+                <hr className="mt-2" />
+                <div>
+                  <div className="flex items-center mt-4">
+                    {" "}
+                    <i
+                      data-lucide="clipboard"
+                      className="w-4  h-4 text-slate-500 mr-2"
+                    ></i>{" "}
+                    First Name : {userInfoi?.candidate?.fname}{" "}
+                  </div>
+                  <div className="flex items-center mt-4">
+                    {" "}
+                    <i
+                      data-lucide="clipboard"
+                      className="w-4 h-4 text-slate-500 mr-2"
+                    ></i>{" "}
+                    Last-Name : {userInfoi?.candidate?.lname}{" "}
+                  </div>
+                  <div className="group">
+                    <div
+                      className="flex items-center break-all mt-4 "
+                      ref={containerRef}
+                    >
+                      {" "}
+                      <i
+                        data-lucide="clipboard"
+                        className="w-4 h-4 !text-sm text-slate-500 mr-2"
+                      ></i>{" "}
+                      Email: {userInfoi?.candidate?.email}
+                    </div>
+                    {}
+                  </div>
+                  <div className="flex items-center mt-4">
+                    {" "}
+                    <i
+                      data-lucide="clipboard"
+                      className="w-4 h-4 text-slate-500 mr-2"
+                    ></i>{" "}
+                    Phone Number: {userInfoi?.candidate?.mobile}{" "}
+                  </div>
                 </div>
               </div>
               {/* <!-- END: Inbox Side Menu --> */}
@@ -702,7 +936,13 @@ export default function Dashboard() {
                     role="tabpanel"
                     aria-labelledby="tab1"
                   >
-                      {userInfoi && <BioForm candidateId={userInfoi?.candidate?.id} userInfo={userInfoi} activeTab={activeTab}/>}
+                    {/* {userInfoi && ( */}
+                      <BioForm
+                        candidateId={userInfoi?.candidate?.id}
+                        userInfo={userInfoi}
+                        activeTab={activeTab}
+                      />
+                    {/* )} */}
                   </div>
                   <div
                     id="tab2"
@@ -712,7 +952,13 @@ export default function Dashboard() {
                     role="tabpanel"
                     aria-labelledby="tab2"
                   >
-                    <AcademicForm candidateId={userInfoi?.candidate?.id} activeTab={activeTab}/>
+                    {/* {userInfoi && ( */}
+                      <AcademicForm
+                        candidateId={userInfoi?.candidate?.id}
+                        userInfo={userInfoi}
+                        activeTab={activeTab}
+                      />
+                    {/* )} */}
                   </div>
                   <div
                     id="tab3"
@@ -722,140 +968,13 @@ export default function Dashboard() {
                     role="tabpanel"
                     aria-labelledby="tab3"
                   >
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-3 ">
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                    </div>
+                    {/* {userInfoi && ( */}
+                      <ExperienceForm
+                        candidateId={userInfoi?.candidate?.id}
+                        userInfo={userInfoi}
+                        activeTab={activeTab}
+                      />
+                    {/* // )} */}
                   </div>
                   <div
                     id="tab4"
@@ -865,142 +984,15 @@ export default function Dashboard() {
                     role="tabpanel"
                     aria-labelledby="tab4"
                   >
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-3 ">
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                      <div className="">
-                        <label htmlFor="regular-form-1" className="form-label">
-                          Input Text
-                        </label>
-                        <input
-                          id="regular-form-1"
-                          type="text"
-                          className="form-control"
-                          placeholder="Input text"
-                        />
-                      </div>
-                    </div>
+                    {/* {userInfoi && ( */}
+                      <AddressForm
+                        candidateId={userInfoi?.candidate?.id}
+                        userInfo={userInfoi}
+                        activeTab={activeTab}
+                      />
+                    {/* )} */}
                   </div>
-                  <div
+                  {/* <div
                     id="tab5"
                     className={`tab-pane leading-relaxed p-5   ${
                       activeTab == "tab5" ? "active" : ""
@@ -1142,11 +1134,10 @@ export default function Dashboard() {
                         />
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               {/* <!-- END: Inbox Content --> */}
-              
             </div>
             {/* <div className="!flex w-[100%]" style={{justifyContent:"right", display:"flex"}}>
               <button className="btn btn-primary w-24  mt-2 mb-2 " type="submit" onClick={handleSavePersonalDetails}>
@@ -1154,9 +1145,8 @@ export default function Dashboard() {
               </button>{" "}
               </div> */}
           </div>
-          
         </div>
-        
+
         {/* <!-- END: Content --> */}
       </div>
     </>

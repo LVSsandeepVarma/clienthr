@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import OtpInput from "./otpInput";
 export default function VerifyOtp() {
   const [otp, setotp] = useState("");
-  const [otpError, setOtpError] = useState("")
-
+  const [otpError, setOtpError] = useState("");
 
   return (
     <>
-          <div className="container">
+      <div className="container">
         <div className="w-full min-h-screen p-5 md:p-20 flex items-center justify-center">
           <div className="w-96 intro-y">
             <img
@@ -18,8 +17,7 @@ export default function VerifyOtp() {
             <div className="text-white dark:text-slate-300 text-2xl font-medium text-center mt-14">
               Verify OTP
             </div>
-            <OtpInput/>
-            
+            <OtpInput />
           </div>
         </div>
       </div>
@@ -32,9 +30,5 @@ export default function VerifyOtp() {
       </div>
       {/* <!-- END: Dark Mode Switcher--> */}
     </>
-  )
+  );
 }
-
-
-
-

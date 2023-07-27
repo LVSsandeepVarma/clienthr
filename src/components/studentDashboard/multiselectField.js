@@ -16,7 +16,7 @@ class MySelect extends Component {
   render() {
     return (
       <TomSelect
-      new={true}
+        new={true}
         id="multi-select"
         options={[
           { value: "opt1", text: "Option 1" },
