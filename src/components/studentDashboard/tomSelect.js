@@ -30,9 +30,9 @@ import TomSelect from "tom-select";
         create: true,
         onDelete: function (values) {
           return confirm(
-            values.length > 1
+            values?.length > 1
               ? "Are you sure you want to remove these " +
-                  values.length +
+                  values?.length +
                   " items?"
               : 'Are you sure you want to remove "' + values[0] + '"?'
           );

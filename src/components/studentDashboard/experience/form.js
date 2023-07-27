@@ -53,8 +53,8 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
   console.log("Experienceform");
   const [successMsg, setSuccessMsg] = useState("");
   const [apiErr, setApiErr] = useState([]);
-  console.log("userInfo", userInfo.academic.length);
-  const newInitialValues = {
+  console.log("userInfo", userInfo?.academic.length);
+  const [newInitialValues, setNewInitialValues] = useState({
     experiences: {
       company_name: "",
       company_phone: "",
@@ -70,57 +70,63 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
       company_pincode: "",
       company_email: "",
     },
-  };
+  });
   const [initialValues, setInitialValues] = useState({
     experiences:
-      userInfo?.experience?.map((experience) => ({
-        company_name: experience.company_name || "",
-        id: experience.id,
-        company_phone: experience.company_phone || "",
-        designation: experience.designation || "",
-        from_date: experience.from_date || "",
-        to_date: experience.to_date || "",
-        salary_month: experience.salary_month || "",
-        experience: experience.experience || "",
-        company_address: experience.company_address || "",
-        company_city: experience.company_city || "",
-        company_state: experience.company_state || "",
-        company_country: experience.company_country || "",
-        company_pincode: experience.company_pincode || "",
-        company_email: experience.company_email || "",
-      })) || [],
+      userInfo?.experience?.length > 0
+        ? userInfo?.experience?.map((experience) => ({
+            company_name: experience.company_name || "",
+            id: experience.id,
+            company_phone: experience.company_phone || "",
+            designation: experience.designation || "",
+            from_date: experience.from_date || "",
+            to_date: experience.to_date || "",
+            salary_month: experience.salary_month || "",
+            experience: experience.experience || "",
+            company_address: experience.company_address || "",
+            company_city: experience.company_city || "",
+            company_state: experience.company_state || "",
+            company_country: experience.company_country || "",
+            company_pincode: experience.company_pincode || "",
+            company_email: experience.company_email || "",
+          }))
+        : [newInitialValues?.experiences[0]],
   });
+
+ 
 
   const formRef = React.createRef();
 
   useEffect(() => {
     setInitialValues({
       experiences:
-        userInfo?.experience?.map((experience) => ({
-          company_name: experience.company_name || "",
-          id: experience.id,
-          company_phone: experience.company_phone || "",
-          designation: experience.designation || "",
-          from_date: experience.from_date || "",
-          to_date: experience.to_date || "",
-          salary_month: experience.salary_month || "",
-          experience: experience.experience || "",
-          company_address: experience.company_address || "",
-          company_city: experience.company_city || "",
-          company_state: experience.company_state || "",
-          company_country: experience.company_country || "",
-          company_pincode: experience.company_pincode || "",
-          company_email: experience.company_email || "",
-        })) || [],
+        userInfo?.experience?.length > 0
+          ? userInfo?.experience?.map((experience) => ({
+              company_name: experience.company_name || "",
+              id: experience.id,
+              company_phone: experience.company_phone || "",
+              designation: experience.designation || "",
+              from_date: experience.from_date || "",
+              to_date: experience.to_date || "",
+              salary_month: experience.salary_month || "",
+              experience: experience.experience || "",
+              company_address: experience.company_address || "",
+              company_city: experience.company_city || "",
+              company_state: experience.company_state || "",
+              company_country: experience.company_country || "",
+              company_pincode: experience.company_pincode || "",
+              company_email: experience.company_email || "",
+            }))
+          : [newInitialValues?.experiences[0]],
     });
   }, [activeTab]);
 
   const handleSubmit = async (values) => {
     console.log(
       values,
-      values.experiences,
-      userInfo.experience.length,
-      values.experiences.slice(userInfo.experience.length)
+      values?.experiences,
+      userInfo?.experience.length,
+      values?.experiences.slice(userInfo?.experience.length)
     );
     setSuccessMsg("");
     setApiErr([]);
@@ -159,14 +165,14 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
 
   const addAcademicDetail = (setFieldValue) => {
     setFieldValue("experiences", [
-      ...formRef.current.values.experiences,
-      { ...newInitialValues.experiences[0] },
+      ...formRef.current.values?.experiences,
+      { ...newInitialValues?.experiences[0] },
     ]);
     formRef.current.validateForm();
   };
 
   const removeAcademicDetail = async (setFieldValue, index, id) => {
-    const experiences = formRef.current.values.experiences.slice();
+    const experiences = formRef?.current?.values?.experiences.slice();
     console.log(experiences);
     try {
       const token = localStorage.getItem("token");
@@ -179,7 +185,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
           },
         }
       );
-      console.log(response.data);
+      console.log(response?.data);
       if (response?.data?.status) {
         const fetchUserInfoResponse = await axios.get("");
       }
@@ -206,7 +212,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
             <FieldArray name="experiences">
               {/* {({ remove, push}) =>{ */}
               <>
-                {values.experiences.map((experiences, index) => (
+                {values?.experiences?.map((experiences, index) => (
                   <>
                     <div className="flex mt-2">
                       <p className=" flex w-full font-bold text-lg text-blue-900">
@@ -576,7 +582,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                             removeAcademicDetail(
                               setFieldValue,
                               index - 1,
-                              userInfo.experience[index]?.id
+                              userInfo?.experience[index]?.id
                             )
                           }
                         >
@@ -607,7 +613,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                   )}
                   {apiErr?.length > 0 &&
                     apiErr?.map((val, ind) => {
-                      return Object?.values(val).map((er, ind) => (
+                      return Object?.values(val)?.map((er, ind) => (
                         <p className="font-bold" style={{ color: "red" }}>
                           {er}
                         </p>

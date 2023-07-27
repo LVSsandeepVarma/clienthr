@@ -28,8 +28,9 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
   const [successMsg, setSuccessMsg] = useState("");
   const [apiErr, setApiErr] = useState([]);
   console.log("userInfo", userInfo?.address);
-  const newInitialValues = {
+  const [newInitialValues, setNewInitialValues] = useState({
     address: {
+      street_1:"",
       street_2: "",
       city: "",
       state: "",
@@ -37,10 +38,27 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
       country: "",
       address_type: "",
     },
-  };
+  });
   const [initialValues, setInitialValues] = useState({
     address:
-      userInfo?.address?.map((addr) => ({
+    userInfo?.address?.map((addr, ind) => ({
+      street_1: addr.street_1 || "",
+      street_2: addr.street_2 || "",
+      id: addr.id || "",
+      city: addr.city || "",
+      state: addr.state || "",
+      pincode: addr.pincode || "",
+      country: addr.country || "",
+      address_type: addr.address_type || "",
+    })),
+  });
+
+  const formRef = React.createRef();
+
+  useEffect(() => {
+    // Set default values for address if userInfo?.address is undefined or empty
+    const defaultAddress = userInfo?.address?.length > 0
+      ? userInfo?.address?.map((addr) => ({
         street_1: addr.street_1 || "",
         street_2: addr.street_2 || "",
         id: addr.id || "",
@@ -49,26 +67,13 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
         pincode: addr.pincode || "",
         country: addr.country || "",
         address_type: addr.address_type || "",
-      })) || [],
-  });
+      }))
+      : [{ ...newInitialValues.address }]; // Use an array with default address values
 
-  const formRef = React.createRef();
-
-  useEffect(() => {
     setInitialValues({
-      address:
-        userInfo?.address?.map((addr) => ({
-          street_1: addr.street_1 || "",
-          street_2: addr.street_2 || "",
-          id: addr.id || "",
-          city: addr.city || "",
-          state: addr.state || "",
-          pincode: addr.pincode || "",
-          country: addr.country || "",
-          address_type: addr.address_type || "",
-        })) || [],
+      address: defaultAddress,
     });
-  }, [activeTab]);
+  }, [activeTab, userInfo]);
 
   const handleSubmit = async (values) => {
     console.log(values);
@@ -110,14 +115,14 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
 
   const addAcademicDetail = (setFieldValue) => {
     setFieldValue("address", [
-      ...formRef.current.values.address,
-      { ...newInitialValues.address[0] },
+      ...formRef.current.values?.address,
+      { ...newInitialValues?.address[0] },
     ]);
     formRef.current.validateForm();
   };
 
   const removeAcademicDetail = async (setFieldValue, index, id) => {
-    const address = formRef.current.values.address.slice();
+    const address = formRef.current.values?.address.slice();
     console.log(address);
 
     try {
@@ -155,7 +160,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
             <FieldArray name="address">
               {/* {({ remove, push}) =>{ */}
               <>
-                {values.address.map((address, index) => (
+                {values?.address?.map((address, index) => (
                   <>
                     <div className="flex mt-2">
                       <p className=" flex w-full font-bold text-lg text-blue-900">
@@ -376,7 +381,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                             removeAcademicDetail(
                               setFieldValue,
                               index - 1,
-                              userInfo.address[index].id
+                              userInfo?.address[index].id
                             )
                           }
                         >
@@ -407,7 +412,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                   )}
                   {apiErr?.length > 0 &&
                     apiErr?.map((val, ind) => {
-                      return Object?.values(val).map((er, ind) => (
+                      return Object?.values(val)?.map((er, ind) => (
                         <p className="font-bold" style={{ color: "red" }}>
                           {er}
                         </p>

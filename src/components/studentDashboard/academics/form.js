@@ -56,7 +56,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
   const [successMsg, setSuccessMsg] = useState("");
   const [apiErr, setApiErr] = useState([]);
   // console.log("userInfo", userInfo?.academic);
-  const newInitialValues = {
+  const [newInitialValues, setNewInitialValues] = useState({
     academics: {
       institution_name: "",
       institution_board: "",
@@ -71,32 +71,33 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
       country: "",
       zipcode: "",
     },
-  };
+  });
+
   const [initialValues, setInitialValues] = useState({
     academics:
-      userInfo?.academic?.map((academic) => ({
-        institution_name: academic.institution_name || "",
-        institution_board: academic.institution_board || "",
-        id: academic.id || "",
-        stream: academic.stream || "",
-        passed_year: academic.passed_year || "",
-        total_marks: academic.total_marks || "",
-        obtained_marks: academic.obtained_marks || "",
-        registration_no: academic.registration_no || "",
-        registration_year: academic.registration_year || "",
-        city: academic.city || "",
-        state: academic.state || "",
-        country: academic.country || "",
-        zipcode: academic.zipcode || "",
-      })) || [],
+    userInfo?.academic?.map((academic, ind) => ({
+      institution_name: academic.institution_name || "",
+      institution_board: academic.institution_board || "",
+      id: academic.id || "",
+      stream: academic.stream || "",
+      passed_year: academic.passed_year || "",
+      total_marks: academic.total_marks || "",
+      obtained_marks: academic.obtained_marks || "",
+      registration_no: academic.registration_no || "",
+      registration_year: academic.registration_year || "",
+      city: academic.city || "",
+      state: academic.state || "",
+      country: academic.country || "",
+      zipcode: academic.zipcode || "",
+    })),
   });
 
   const formRef = React.createRef();
 
   useEffect(() => {
-    setInitialValues({
-      academics:
-        userInfo?.academic?.map((academic, ind) => ({
+    // Set default values for academics if userInfo?.academics is undefined or empty
+    const defaultAcademics = userInfo?.academics?.length > 0
+      ? userInfo?.academics?.map((academic) => ({
           institution_name: academic.institution_name || "",
           institution_board: academic.institution_board || "",
           id: academic.id || "",
@@ -110,9 +111,13 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
           state: academic.state || "",
           country: academic.country || "",
           zipcode: academic.zipcode || "",
-        })) || [],
+        }))
+      : [newInitialValues.academics];
+
+    setInitialValues({
+      academics: defaultAcademics,
     });
-  }, [activeTab]);
+  }, [activeTab, userInfo]);
 
   const handleSubmit = async (values) => {
     console.log(values);
@@ -122,12 +127,12 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
     console.log(values);
     const formData = {
       candidate_id: candidate_id,
-      dob: values.dateOfBirth,
-      skills: values.skills,
-      mother_name: values.mothersName,
-      father_name: values.fathersName,
-      home_phone: values.homePhoneNumber,
-      place_birth: values.birthPlace,
+      dob: values?.dateOfBirth,
+      skills: values?.skills,
+      mother_name: values?.mothersName,
+      father_name: values?.fathersName,
+      home_phone: values?.homePhoneNumber,
+      place_birth: values?.birthPlace,
       email_code: values?.email,
       citizenship_id: values?.citizenshipId,
       tax_id: values?.taxId,
@@ -136,7 +141,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
       passport_expiry: values?.passportExpiryDate,
       languages_speak: values?.languagesSpeak,
       languages_write: values?.languages,
-      blood_group: values.bloodGroup,
+      blood_group: values?.bloodGroup,
     };
     const token = localStorage.getItem("token");
     try {
@@ -172,8 +177,8 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
 
   const addAcademicDetail = (setFieldValue) => {
     setFieldValue("academics", [
-      ...formRef.current.values.academics,
-      { ...newInitialValues.academics[0] },
+      ...formRef.current.values?.academics,
+      { ...newInitialValues?.academics[0] },
     ]);
     formRef.current.validateForm();
   };
@@ -193,7 +198,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
       );
       console.log(response.data);
 
-      const academics = formRef.current.values.academics.slice();
+      const academics = formRef.current.values?.academics.slice();
       console.log(academics);
       academics.splice(index + 1, 1);
       setFieldValue("academics", academics);
@@ -218,7 +223,8 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
             <FieldArray name="academics">
               {/* {({ remove, push}) =>{ */}
               <>
-                {values.academics.map((academic, index) => (
+              {console.log(values)}
+                {values?.academics?.map((academic, index) => (
                   <>
                     <div className="flex mt-2">
                       <p className=" flex w-full font-bold text-lg text-blue-900">
@@ -569,7 +575,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                             removeAcademicDetail(
                               setFieldValue,
                               index - 1,
-                              userInfo.academic[index].id
+                              userInfo?.academic[index].id
                             )
                           }
                         >
@@ -604,7 +610,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                   )}
                   {apiErr?.length > 0 &&
                     apiErr?.map((val, ind) => {
-                      return Object?.values(val).map((er, ind) => (
+                      return Object?.values(val)?.map((er, ind) => (
                         <p className="font-bold" style={{ color: "red" }}>
                           {er}
                         </p>
