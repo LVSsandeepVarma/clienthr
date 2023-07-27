@@ -30,26 +30,17 @@ export default function Dashboard() {
           setUserInfo(response?.data?.data)
         }else{
           localStorage.removeItem("token");
-<<<<<<< Updated upstream
-        navigate("/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww=")
-=======
           // navigate(
           //   "/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww="
           // );
->>>>>>> Stashed changes
         }
         
       }catch(err){
         console.log(err,"err")
         localStorage.removeItem("token");
-<<<<<<< Updated upstream
-        navigate("/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww=")
-        
-=======
         // navigate(
         //   "/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww="
         // );
->>>>>>> Stashed changes
       }
 
     }
