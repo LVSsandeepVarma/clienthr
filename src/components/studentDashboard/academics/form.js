@@ -9,40 +9,44 @@ import { BsTrash3 } from "react-icons/bs";
 import { AiOutlinePlus } from "react-icons/ai";
 
 const academicSchema = Yup.object().shape({
-  institution_name: Yup.string().required("Institution name is required"),
+  institution_name: Yup.string()    .matches(/^[A-Za-z ]+$/, "Institution name should contain only alphabets")
+  .required("Institution name is required"),
   institution_board: Yup.string()
-    .matches(/^[A-Za-z]+$/, "Institution board should contain only alphabets")
+    .matches(/^[A-Za-z ]+$/, "Institution board should contain only alphabets")
     .required("Institution board is required"),
-  stream: Yup.string().required("Stream is required"),
-  passed_year: Yup.string().required("Passed year is required"),
-  total_marks: Yup.string().required("Total marks is required"),
-  obtained_marks: Yup.string().required("Obtained marks is required"),
+  stream: Yup.string()    .matches(/^[A-Za-z ]+$/, "Stream should contain only alphabets")
+  .required("Stream is required"),
+  passed_year: Yup.string().matches(/^[0-9 ]+$/, "Passed year should be numarical ")
+  .required("Passed year is required"),
+  total_marks: Yup.string().matches(/^[0-9. ]+$/, "Total marks should be numarical ").required("Total marks is required"),
+  obtained_marks: Yup.string().matches(/^[0-9. ]+$/, "Obtained marks should be numarical ").required("Obtained marks is required"),
   registration_no: Yup.string()
     .matches(
-      /^[a-zA-Z0-9]+$/,
+      /^[a-zA-Z0-9 ]+$/,
       "Registration no should contain only alphanumeric characters"
     )
     .required("Registration no is required"),
   registration_year: Yup.string()
     .matches(
-      /^[a-zA-Z0-9]+$/,
+      /^[a-zA-Z0-9 ]+$/,
       "Registration year should contain only alphanumeric characters"
     )
     .required("Registration year is required"),
   city: Yup.string()
-    .matches(/^[A-Za-z]+$/, "City should contain only alphabets")
+    .matches(/^[A-Za-z ]+$/, "City should contain only alphabets")
     .required("City is required"),
   state: Yup.string()
-    .matches(/^[A-Za-z]+$/, "State should contain only alphabets")
+    .matches(/^[A-Za-z ]+$/, "State should contain only alphabets")
     .required("State is required"),
   country: Yup.string().matches(
     /^[A-Za-z]+$/,
     "Country should contain only alphabets"
-  ),
+  )    .required("Country is required"),
   zipcode: Yup.string().matches(
     /^[0-9]+$/,
     "Zipcode should contain only numbers"
-  ),
+  )    .required("Zipcode is required"),
+
 });
 
 const validationSchema = Yup.object().shape({
@@ -113,7 +117,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
           country: academic.country || "",
           zipcode: academic.zipcode || "",
         }))
-      : [newInitialValues.academics];
+      : [{...newInitialValues?.academics}];
 
     setInitialValues({
       academics: defaultAcademics,
@@ -124,26 +128,8 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
     console.log(values);
     setSuccessMsg("");
     setApiErr([]);
-    // Handle form submission here
+    // // Handle form submission here
     console.log(values);
-    const formData = {
-      candidate_id: candidate_id,
-      dob: values?.dateOfBirth,
-      skills: values?.skills,
-      mother_name: values?.mothersName,
-      father_name: values?.fathersName,
-      home_phone: values?.homePhoneNumber,
-      place_birth: values?.birthPlace,
-      email_code: values?.email,
-      citizenship_id: values?.citizenshipId,
-      tax_id: values?.taxId,
-      passport_id: values?.passportId,
-      passport_issued: values?.passportIssuedDate,
-      passport_expiry: values?.passportExpiryDate,
-      languages_speak: values?.languagesSpeak,
-      languages_write: values?.languages,
-      blood_group: values?.bloodGroup,
-    };
     const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
@@ -179,12 +165,19 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
   const addAcademicDetail = (setFieldValue) => {
     setFieldValue("academics", [
       ...formRef.current.values?.academics,
-      { ...newInitialValues?.academics[0] },
+      { ...newInitialValues?.academics },
     ]);
     // formRef.current.validateForm();
   };
 
   const removeAcademicDetail = async (setFieldValue, index, id) => {
+    const academics = formRef.current.values?.academics.slice();
+
+    if(!id){
+      academics?.splice(index + 1, 1);
+      setFieldValue("academics", academics);
+      formRef.current.validateForm();
+    }else if(id){
     formRef.current.validateForm();
     try {
       const token = localStorage.getItem("token");
@@ -199,7 +192,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
       );
       console.log(response.data);
 
-      const academics = formRef.current.values?.academics.slice();
+      // const academics = formRef.current.values?.academics.slice();
       console.log(academics);
       academics.splice(index + 1, 1);
       setFieldValue("academics", academics);
@@ -207,7 +200,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
     } catch (err) {
       console.log(err);
       setApiErr([err?.response?.data?.errors]);
-    }
+    }}
   };
 
   return (
@@ -218,7 +211,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
       enableReinitialize={true}
       innerRef={formRef}
     >
-      {({ values, resetForm, setFieldValue }) => (
+      {({ values, setFieldValue }) => (
         <>
           <Form>
             <FieldArray name="academics">
@@ -232,13 +225,15 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                         Academic details - {index + 1}
                       </p>
                       <div class="w-full flex justify-end items-baseline ">
-                        {index == 0 && (
+                        {!index  && (
                           <button
-                            class="btn btn-primary shadow-md mr-2"
+                          type="button"
+                            className="!bg-[#00195f] btn btn-primary font-bold !text-white shadow-md mr-2"
+                            style={{background : "rgb(0, 23, 86)!important"}}
                             onClick={() => addAcademicDetail(setFieldValue)}
                           >
-                            {" "}
-                            <AiOutlinePlus className="mr-2" /> Add New Product{" "}
+                            
+                            <AiOutlinePlus className="mr-2" /> Add New Product
                           </button>
                         )}
                       </div>
@@ -261,7 +256,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                             placeholder="company phone"
                             name={`academics.${index}?.id`}
                           />
-                          <p
+                          {/* <p
                             className="!text-red-800 font-bold"
                             style={{ color: "red" }}
                           >
@@ -269,7 +264,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                               className="!text-red-600 font-bold"
                               name={`academics[${index}]?.id`}
                             />
-                          </p>
+                          </p> */}
                         </div>
                         <div className="">
                           <label
@@ -284,7 +279,6 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                             placeholder="Institution name"
                             name={`academics.${index}.institution_name`}
                             className=" form-control  block mx-auto"
-                            data-single-mode="true"
                           />
                           <p className="text-red-800 font-bold">
                             <ErrorMessage

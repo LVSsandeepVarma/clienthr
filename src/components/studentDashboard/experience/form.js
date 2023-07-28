@@ -12,7 +12,8 @@ const experienceSchema = Yup.object().shape({
   company_name: Yup.string().required("Company name is required"),
   company_phone: Yup.string()
     .matches(/^[0-9]+$/, "Company phone should contain only numbers")
-    .required("Company phone is required"),
+    .required("Company phone is required")
+    .min(7,"min 7 digits are required").max(15,"maximum 15 digits are allowed"),
   designation: Yup.string().required("Designation is required"),
   from_date: Yup.string().required("From date required"),
   to_date: Yup.string().required("To date required"),
@@ -22,7 +23,7 @@ const experienceSchema = Yup.object().shape({
     .required("Experience in years required"),
   company_address: Yup.string()
     .matches(
-      /^[a-zA-Z ]+$/,
+      /^[a-zA-Z0-9 ]+$/,
       "Company address should contain only alphanumeric characters"
     )
     .required("Company address required"),
@@ -45,7 +46,7 @@ const experienceSchema = Yup.object().shape({
 });
 
 const validationSchema = Yup.object().shape({
-  experience: Yup.array().of(experienceSchema),
+  experiences: Yup.array().of(experienceSchema),
   // Add other validation rules for other fields if needed
 });
 
@@ -73,8 +74,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
   });
   const [initialValues, setInitialValues] = useState({
     experiences:
-      userInfo?.experience?.length > 0
-        ? userInfo?.experience?.map((experience) => ({
+      userInfo?.experience?.map((experience, ind) => ({
             company_name: experience.company_name || "",
             id: experience?.id,
             company_phone: experience.company_phone || "",
@@ -89,18 +89,13 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
             company_country: experience.company_country || "",
             company_pincode: experience.company_pincode || "",
             company_email: experience.company_email || "",
-          }))
-        : [newInitialValues?.experiences[0]],
+          })),
   });
-
- 
 
   const formRef = React.createRef();
 
   useEffect(() => {
-    setInitialValues({
-      experiences:
-        userInfo?.experience?.length > 0
+    const defaultExperience = userInfo?.experience?.length > 0
           ? userInfo?.experience?.map((experience) => ({
               company_name: experience.company_name || "",
               id: experience.id,
@@ -117,8 +112,10 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
               company_pincode: experience.company_pincode || "",
               company_email: experience.company_email || "",
             }))
-          : [newInitialValues?.experiences[0]],
-    });
+          : [{...newInitialValues?.experiences}]
+          setInitialValues({
+            experiences: defaultExperience
+          })
   }, [activeTab, userInfo]);
 
   const handleSubmit = async (values) => {
@@ -164,9 +161,13 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
   };
 
   const addAcademicDetail = (setFieldValue) => {
-    setFieldValue("expericences", [
+    console.log([
       ...formRef.current.values?.experiences,
-      { ...newInitialValues?.experiences[0] },
+      { ...newInitialValues?.experiences },
+    ])
+    setFieldValue("experiences", [
+      ...formRef.current.values?.experiences,
+      { ...newInitialValues?.experiences },
     ]);
     // formRef.current.validateForm();
   };
@@ -191,9 +192,9 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
         }
       );
       console.log(response?.data);
-      if (response?.data?.status) {
-        const fetchUserInfoResponse = await axios.get("");
-      }
+      // if (response?.data?.status) {
+      //   const fetchUserInfoResponse = await axios.get("");
+      // }
       experiences.splice(index + 1, 1);
       setFieldValue("experiences", experiences);
       formRef.current.validateForm();
@@ -208,7 +209,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
-      // enableReinitialize={true}
+      enableReinitialize={true}
       innerRef={formRef}
     >
       {({ values, setFieldValue }) => (
@@ -217,6 +218,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
             <FieldArray name="experiences">
               {/* {({ remove, push}) =>{ */}
               <>
+              {console.log(values?.experiences)}
                 {values?.experiences?.map((experiences, index) => (
                   <>
                     <div className="flex mt-2">
@@ -224,9 +226,11 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                         Experience details - {index + 1}
                       </p>
                       <div class="w-full flex justify-end items-center ">
-                        {index == 0 && (
+                        {!index  && (
                           <button
-                            class="btn btn-primary shadow-md mr-2"
+                          type="button"
+                            className="!bg-[#00195f] btn btn-primary font-bold !text-white shadow-md mr-2"
+                            style={{background : "rgb(0, 23, 86)!important"}}
                             onClick={() => addAcademicDetail(setFieldValue)}
                           >
                             

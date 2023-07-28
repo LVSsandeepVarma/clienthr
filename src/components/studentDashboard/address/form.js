@@ -9,13 +9,13 @@ import { BsTrash3 } from "react-icons/bs";
 import { AiOutlinePlus } from "react-icons/ai";
 
 const addressSchema = Yup.object().shape({
-  street_1: Yup.string().required("Street 1 is required"),
+  street_1: Yup.string().matches(/^[A-Za-z0-9. ]+$/, "Street 1 should contain only alphanumaricals").required("Street 1 is required"),
   street_2: Yup.string(),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State required"),
-  pincode: Yup.string().required("Pincode required"),
-  country: Yup.string().required("Country required"),
-  address_type: Yup.string().required("Address Type required"),
+  city: Yup.string().matches(/^[A-Za-z ]+$/, "City should contain only alphabets").required("City is required"),
+  state: Yup.string().matches(/^[A-Za-z ]+$/, "State should contain only alphabets").required("State required"),
+  pincode: Yup.string().matches(/^[0-9 ]+$/, "Pincode should contain only numaricals").required("Pincode required"),
+  country: Yup.string().matches(/^[A-Za-z ]+$/, "Country should contain only alphabets").required("Country required"),
+  address_type: Yup.string().matches(/^[A-Za-z ]+$/, "Address type name should contain only alphabets").required("Address Type required"),
 });
 
 const validationSchema = Yup.object().shape({
@@ -116,7 +116,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
   const addAcademicDetail = (setFieldValue) => {
     setFieldValue("address", [
       ...formRef.current.values?.address,
-      { ...newInitialValues?.address[0] },
+      { ...newInitialValues?.address },
     ]);
     // formRef.current.validateForm();
   };
@@ -174,15 +174,17 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                         Address details - {index + 1}
                       </p>
                       <div class="w-full flex justify-end items-center ">
-                        {index == 0 && (
+                      {!index  && (
                           <button
-                            class="btn btn-primary shadow-md mr-2"
+                          type="button"
+                            className="!bg-[#00195f] btn btn-primary font-bold !text-white shadow-md mr-2"
+                            style={{background : "rgb(0, 23, 86)!important"}}
                             onClick={() => addAcademicDetail(setFieldValue)}
                           >
-                            {" "}
-                            <AiOutlinePlus className="mr-2" /> Add New Product{" "}
+                            
+                            <AiOutlinePlus className="mr-2" /> Add New Product
                           </button>
-                        )}{" "}
+                        )}
                       </div>
                     </div>
                     <div
