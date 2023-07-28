@@ -44,7 +44,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
     userInfo?.address?.map((addr, ind) => ({
       street_1: addr.street_1 || "",
       street_2: addr.street_2 || "",
-      id: addr.id || "",
+      id: addr?.id || "",
       city: addr.city || "",
       state: addr.state || "",
       pincode: addr.pincode || "",
@@ -61,7 +61,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
       ? userInfo?.address?.map((addr) => ({
         street_1: addr.street_1 || "",
         street_2: addr.street_2 || "",
-        id: addr.id || "",
+        id: addr?.id || "",
         city: addr.city || "",
         state: addr.state || "",
         pincode: addr.pincode || "",
@@ -118,15 +118,21 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
       ...formRef.current.values?.address,
       { ...newInitialValues?.address[0] },
     ]);
-    formRef.current.validateForm();
+    // formRef.current.validateForm();
   };
 
   const removeAcademicDetail = async (setFieldValue, index, id) => {
     const address = formRef.current.values?.address.slice();
     console.log(address);
-
+    if(!id){
+      address.splice(index + 1, 1);
+      setFieldValue("address", address);
+      formRef.current.validateForm();
+    }
+    else if (id){
     try {
       const token = localStorage.getItem("token");
+
       const response = await axios.post(
         "https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/address/remove",
         { address_id: id },
@@ -144,6 +150,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
       console.log(err);
       setApiErr([err?.response?.data?.errors]);
     }
+  }
   };
 
   return (
@@ -182,7 +189,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                       className="border-2 border-slate-200/60 p-4 mt-2 "
                       key={index}
                     >
-                      <div className="grid grid-cols-4 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`street_1_${index}`}
@@ -211,7 +218,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                             type="text"
                             className="form-control !none"
                             placeholder="id"
-                            name={`address[${index}].id`}
+                            name={`address[${index}]?.id`}
                           />
                           <p
                             className="!text-red-800 font-bold"
@@ -298,7 +305,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                       </div>
                       <hr className="mt-2 sm:mt-4  p-1" />
 
-                      <div className="grid grid-cols-3 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`pincode${index}`}
@@ -381,7 +388,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                             removeAcademicDetail(
                               setFieldValue,
                               index - 1,
-                              userInfo?.address[index].id
+                              userInfo?.address[index]?.id
                             )
                           }
                         >

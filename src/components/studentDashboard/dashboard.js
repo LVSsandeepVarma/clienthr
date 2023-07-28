@@ -18,10 +18,14 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [interviewStatus, setInterviewStatus] = useState();
   const [userInterviewScheduleResponse, setUserInterviewSechduleResponse] = useState();
-  const [userInterviewReScheduleResponse, setUserInterviewReSechduleResponse] = useState()
+  const [userInterviewReScheduleResponse, setUserInterviewReSechduleResponse] = useState();
+  const [interviewError, setInterviewError] = useState("")
+  const [interviewsuccess, setInterviewSuccess] = useState("");
+  const [showLinkError, setShowLinkError] = useState(false)
 
 
   useEffect(() => {
+    console.log(localStorage.getItem("interviewStatus"))
     const fetchUserInfo = async () => {
       if (
         containerRef.current &&
@@ -45,16 +49,11 @@ export default function Dashboard() {
           setUserInfo(response?.data?.data);
         } else {
           localStorage.removeItem("token");
-          // navigate(
-          //   "/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww="
-          // );
+          navigate("*")
         }
       } catch (err) {
         console.log(err, "err");
-        localStorage.removeItem("token");
-        // navigate(
-        //   "/candidate/verify/EwPZd3Of80yoaUbOqbeTov+&&met&&aUfWQinz4a+MFlWX8Ww="
-        // );
+       navigate("*")
       }
     };
 
@@ -72,6 +71,11 @@ export default function Dashboard() {
 
 
   const handleAcceptInterview=async()=>{
+    if(interviewError){
+      setInterviewStatus("blank")
+      localStorage.removeItem("interviewStatus")
+    }
+    console.log("yes")
     try{
       const token = localStorage.getItem("token")
       const response = await axios.post("https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/interview-accept",{candidate_id:userInfoi?.candidate?.id},{headers:{
@@ -79,12 +83,22 @@ export default function Dashboard() {
       }})
       if(response.data?.status){
         localStorage.setItem("interviewStatus","blank")
+        setInterviewSuccess(response?.data?.message)
+        setInterviewStatus("blank")
+        setInterviewError("")
       }
     }catch(err){
       console.log(err)
+      setInterviewError(err?.response?.data?.message)
+      // setInterviewStatus("blank")
+     
     }
   }
   const handleRejectInterview=async()=>{
+    if(interviewError){
+      setInterviewStatus("black");
+      localStorage.removeItem("interviewStatus")
+    }
     try{
       const token = localStorage.getItem("token")
       const response = await axios.post("https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/request-to-postpone",{candidate_id:userInfoi?.candidate?.id},{headers:{
@@ -92,12 +106,23 @@ export default function Dashboard() {
       }})
       if(response.data?.status){
         localStorage.setItem("interviewStatus","blank")
+        
+        setInterviewSuccess(response?.data?.message)
+        setInterviewError("")
+        setInterviewStatus("blank");
+        setUserInterviewSechduleResponse()
       }
     }catch(err){
       console.log(err)
+      setInterviewError(err?.response?.data?.message)
+      setUserInterviewSechduleResponse()
     }
   }
   const handleRescheduleInterview=async()=>{
+    if(interviewError){
+      setInterviewStatus("black");
+      localStorage.removeItem("interviewStatus")
+    }
     try{
       const token = localStorage.getItem("token")
       const response = await axios.post("https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/request-to-postpone",{candidate_id:userInfoi?.candidate?.id},{headers:{
@@ -105,15 +130,23 @@ export default function Dashboard() {
       }})
       if(response.data?.status){
         localStorage.setItem("interviewStatus","blank")
+        setInterviewStatus("black")
+        setInterviewSuccess(response?.data?.message)
+        setInterviewError("")
+        setUserInterviewSechduleResponse()
       }
     }catch(err){
       console.log(err)
+      setInterviewStatus("black");
+      setInterviewError(err?.response?.data?.message)
     }
   }
 
   return (
     <>
-{interviewStatus=="yes" &&  <div
+
+      
+{(interviewStatus=="yes" && !showLinkError ) &&  <div
         id="static-backdrop-modal-previews"
         class="modal centered overflow-y-auto show mt-0 ml-0 pl-0 z-[10000]"
         tabindex="-1"
@@ -122,10 +155,10 @@ export default function Dashboard() {
       >
         <div class="modal-dialog">
           <div class="modal-content">
-            <a data-tw-dismiss="modal" href="javascript:;">
+            {/* <a data-tw-dismiss="modal" href="javascript:;">
               {" "}
               <i data-lucide="x" class="w-8 h-8 text-slate-400"></i>{" "}
-            </a>
+            </a> */}
             <div class="modal-body p-0">
               <div class="p-5 text-center">
                 <i
@@ -149,7 +182,8 @@ export default function Dashboard() {
                 >
                   Confirm
                 </button>
-                
+                {interviewError && <p className="text-red-600 font-bold">{interviewError}</p>}
+                {interviewsuccess && <p className="text-green-600 font-bold">{interviewsuccess}</p>}
               </div>
             </div>
           </div>
@@ -157,7 +191,7 @@ export default function Dashboard() {
       </div>}
           
 
-          {interviewStatus=="no" &&
+          {(interviewStatus=="yes" && !showLinkError ) &&
             <div
         id="static-backdrop-modal-previews"
         class="modal centered overflow-y-auto show mt-0 ml-0 pl-0 z-[10000]"
@@ -204,6 +238,8 @@ export default function Dashboard() {
                 >
                   No
                 </button>
+                {interviewError && <p className="text-red-600 font-bold">{interviewError}</p>}
+                {interviewsuccess && <p className="text-green-600 font-bold">{interviewsuccess}</p>}
               </div>
             </div>
           </div>
@@ -213,7 +249,7 @@ export default function Dashboard() {
 
       }
       
-      {(userInterviewScheduleResponse) && 
+      {(userInterviewScheduleResponse && !showLinkError) && 
       <div
         id="static-backdrop-modal-previews"
         class="modal centered overflow-y-auto show mt-0 ml-0 pl-0 z-[10000]"
@@ -245,20 +281,27 @@ export default function Dashboard() {
                   data-tw-dismiss="modal"
                   onClick={handleRejectInterview}
                 >
-                  Noo
+                  No
                 </button>
-                
+                {interviewError && <p className="text-red-600 font-bold">{interviewError}</p>}
+                {interviewsuccess && <p className="text-green-600 font-bold">{interviewsuccess}</p>}
               </div>{" "}
             </div>{" "}
           </div>{" "}
         </div>{" "}
       </div>
       }
-      <div className="flex justify-center container">
+
+      {!showLinkError && <div className="flex justify-center container">
+
         {/* <!-- BEGIN: Content --> */}
         <div className="wrapper">
           {/* <!-- BEGIN: Top Bar --> */}
+          
           <div className="top-bar">
+          <img alt="Hr pannel logo" className="side-nav__header__logo !w-[95px] mr-3 !h-auto" src="/hrLogo.png" />
+
+
             {/* <!-- BEGIN: Breadcrumb --> */}
             <nav aria-label="breadcrumb" className="-intro-x hidden xl:flex">
               <ol className="breadcrumb breadcrumb-light">
@@ -276,13 +319,13 @@ export default function Dashboard() {
             {/* <!-- END: Breadcrumb --> */}
             {/* <!-- BEGIN: Mobile Menu --> */}
             <div className="-intro-x xl:hidden mr-3 sm:mr-6">
-              <div className="mobile-menu-toggler cursor-pointer">
+              {/* <div className="mobile-menu-toggler cursor-pointer">
                 {" "}
                 <i
                   data-lucide="bar-chart-2"
                   className="mobile-menu-toggler__icon transform rotate-90 dark:text-slate-500"
                 ></i>{" "}
-              </div>
+              </div> */}
             </div>
             {/* <!-- END: Mobile Menu --> */}
             {/* <!-- BEGIN: Search --> */}
@@ -936,13 +979,14 @@ export default function Dashboard() {
                     role="tabpanel"
                     aria-labelledby="tab1"
                   >
-                    {/* {userInfoi && ( */}
+                    {userInfoi && (
                       <BioForm
                         candidateId={userInfoi?.candidate?.id}
                         userInfo={userInfoi}
                         activeTab={activeTab}
+                        
                       />
-                    {/* )} */}
+                      )}
                   </div>
                   <div
                     id="tab2"
@@ -952,13 +996,13 @@ export default function Dashboard() {
                     role="tabpanel"
                     aria-labelledby="tab2"
                   >
-                    {/* {userInfoi && ( */}
+                    {userInfoi && (
                       <AcademicForm
                         candidateId={userInfoi?.candidate?.id}
                         userInfo={userInfoi}
                         activeTab={activeTab}
                       />
-                    {/* )} */}
+                     )}
                   </div>
                   <div
                     id="tab3"
@@ -968,13 +1012,13 @@ export default function Dashboard() {
                     role="tabpanel"
                     aria-labelledby="tab3"
                   >
-                    {/* {userInfoi && ( */}
+                    {userInfoi && (
                       <ExperienceForm
                         candidateId={userInfoi?.candidate?.id}
                         userInfo={userInfoi}
                         activeTab={activeTab}
                       />
-                    {/* // )} */}
+                    )}
                   </div>
                   <div
                     id="tab4"
@@ -984,13 +1028,13 @@ export default function Dashboard() {
                     role="tabpanel"
                     aria-labelledby="tab4"
                   >
-                    {/* {userInfoi && ( */}
+                    {userInfoi && ( 
                       <AddressForm
                         candidateId={userInfoi?.candidate?.id}
                         userInfo={userInfoi}
                         activeTab={activeTab}
                       />
-                    {/* )} */}
+                    )}
                   </div>
                   {/* <div
                     id="tab5"
@@ -1148,7 +1192,7 @@ export default function Dashboard() {
         </div>
 
         {/* <!-- END: Content --> */}
-      </div>
+      </div>}
     </>
   );
 }

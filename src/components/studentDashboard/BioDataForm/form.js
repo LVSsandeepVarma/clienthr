@@ -3,7 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import CreatableSelect from "react-select/creatable";
 import TagsInput from "react-tagsinput";
-import "react-tagsinput/react-tagsinput.css";
+// import "react-tagsinput/react-tagsinput.css";
 import axios from "axios";
 
 const validationSchema = Yup.object().shape({
@@ -109,10 +109,10 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
   const [items, setItems] = useState([]);
   const [successMsg, setSuccessMsg] = useState("");
   const [apiErr, setApiErr] = useState([]);
-  console.log(userInfo);
+  console.log(userInfo?.biodata?.languages_write);
   const [initialValues, setInitialValues] = useState({
     dateOfBirth: `${userInfo?.biodata?.dob ? userInfo?.biodata?.dob : ""}`,
-    id: `${userInfo?.biodata?.id ? userInfo?.biodata?.id : null}`,
+    id: userInfo?.biodata?.id ? `${userInfo?.biodata?.id}` : null,
     birthPlace: `${
       userInfo?.biodata?.place_birth ? userInfo?.biodata?.place_birth : ""
     }`,
@@ -152,10 +152,10 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
         : ""
     }`,
     languagesSpeak: userInfo?.biodata?.languages_speak
-      ? [userInfo?.biodata?.languages_speak]
+      ? [...userInfo?.biodata?.languages_speak]
       : [],
     languages: userInfo?.biodata?.languages_write
-      ? [userInfo?.biodata?.languages_write]
+      ? [...userInfo?.biodata?.languages_write]
       : [],
   });
 
@@ -169,7 +169,7 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
       birthPlace: `${
         userInfo?.biodata?.place_birth ? userInfo?.biodata?.place_birth : ""
       }`,
-      id: `${userInfo?.biodata?.id ? userInfo?.biodata?.id : null}`,
+      id: userInfo?.biodata?.id ? `${userInfo?.biodata?.id}` : null,
       phoneCode: "",
       phoneNumber: `${
         userInfo?.candidate?.mobile ? userInfo?.candidate?.mobile : ""
@@ -181,7 +181,7 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
       bloodGroup: `${
         userInfo?.biodata?.blood_group ? userInfo?.biodata?.blood_group : ""
       }`,
-      skills: userInfo?.biodata?.skills ? [userInfo?.biodata?.skills] : [],
+      skills: userInfo?.biodata?.skills ? [...userInfo?.biodata?.skills] : [],
       mothersName: `${
         userInfo?.biodata?.mother_name ? userInfo?.biodata?.mother_name : ""
       }`,
@@ -208,10 +208,10 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
           : ""
       }`,
       languagesSpeak: userInfo?.biodata?.languages_speak
-        ? [userInfo?.biodata?.languages_speak]
+        ? [...userInfo?.biodata?.languages_speak]
         : [],
       languages: userInfo?.biodata?.languages_write
-        ? [userInfo?.biodata?.languages_write]
+        ? [...userInfo?.biodata?.languages_write]
         : [],
     });
   }, [activeTab]);
@@ -260,6 +260,7 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
       if (response?.data?.status) {
         console.log(response?.data);
         setSuccessMsg(response?.data?.message);
+        
       } else {
         console.log(response?.data);
         if (response?.data?.errors) {
@@ -289,7 +290,7 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
       {({ values, resetForm }) => (
         <Form>
           <div className="  ">
-            <div className="grid grid-cols-4 gap-x-5 gap-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-5 gap-y-3">
               <div className="">
                 <label htmlFor="regular-form-1" className="form-label">
                   Date of Birth
@@ -380,7 +381,7 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
             </div>
             <hr className="mt-2 sm:mt-4  p-1" />
 
-            <div className="grid grid-cols-3 gap-x-5 gap-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-3">
               <div className="">
                 <label htmlFor="regular-form-1" className="form-label">
                   Father's name
@@ -438,7 +439,7 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
             </div>
             <hr className="mt-2 sm:mt-4 p-1" />
 
-            <div className="grid grid-cols-3 gap-x-6 gap-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-5">
               <div className="">
                 <label htmlFor="regular-form-1" className="form-label">
                   Citizebship Id
@@ -476,7 +477,7 @@ const BioForm = ({ candidate_id, activeTab, userInfo }) => {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-x-5 gap-y-5 mt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-5 mt-3">
               <div className="">
                 <label htmlFor="regular-form-1" className="form-label">
                   Passport Id

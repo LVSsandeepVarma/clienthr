@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import OtpInput from "./otpInput";
+import { useNavigate } from "react-router-dom";
 
 export default function VerifyPhone() {
   const [phone, setPhone] = useState("");
@@ -9,7 +10,9 @@ export default function VerifyPhone() {
   const [phoneSuccess, setPhoneSuccess] = useState("");
   const [apiErr, setApiErr] = useState([]);
   const [phoneVerifiedStatus, setPhoneVerifiedStatus] = useState(false);
-  console.log(window.location.pathname?.split("/"))
+  const navigate = useNavigate();
+
+  console.log(window.location.pathname?.split("/"));
 
   const verifyPhone = (phoneNum) => {
     const phoneRegex =
@@ -18,12 +21,10 @@ export default function VerifyPhone() {
   };
 
   const handlePhoneVerification = async () => {
-
     setPhoneError("");
     setApiErr([]);
     setPhoneSuccess("");
     try {
-
       if (phone && verifyPhone(phone)) {
         const response = await axios.post(
           "https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/auth/verify-phone",
@@ -34,9 +35,24 @@ export default function VerifyPhone() {
         );
         if (response?.data?.status) {
           localStorage.setItem("mobile", phone);
+          console.log(window.location.pathname?.split("/")[4]);
           setPhoneSuccess(response?.data?.message);
-          setPhoneVerifiedStatus(true);
-          localStorage.setItem("interviewStatus", window.location.pathname?.split("/")[4])
+          if (response?.data?.code == "exist") {
+            // existing user
+            localStorage.setItem(
+              "interviewStatus",
+              window.location.pathname?.split("/")[4]
+            );
+            localStorage.setItem("token", response?.data?.access_token);
+            navigate("/candidate/dashboard");
+          } else {
+            // new user
+            setPhoneVerifiedStatus(true);
+            localStorage.setItem(
+              "interviewStatus",
+              window.location.pathname?.split("/")[4]
+            );
+          }
         } else {
           console.log(response?.data?.message);
           setApiErr([{ phone: response?.data?.message }]);
@@ -122,7 +138,7 @@ export default function VerifyPhone() {
           </div>
         </div>
       </div>
-      
+
       <div
         data-url="side-menu-dark-dashboard-overview-1.html"
         className="dark-mode-switcher cursor-pointer shadow-md fixed bottom-0 right-0 box border rounded-full w-40 h-12 flex items-center justify-center z-50 mb-10 mr-10"

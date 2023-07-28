@@ -51,7 +51,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
-  console.log("Academicsform");
+  console.log("Academicsform", userInfo);
   const [items, setItems] = useState([]);
   const [successMsg, setSuccessMsg] = useState("");
   const [apiErr, setApiErr] = useState([]);
@@ -96,8 +96,9 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
 
   useEffect(() => {
     // Set default values for academics if userInfo?.academics is undefined or empty
-    const defaultAcademics = userInfo?.academics?.length > 0
-      ? userInfo?.academics?.map((academic) => ({
+    console.log(userInfo?.academic)
+    const defaultAcademics = userInfo?.academic?.length > 0
+      ? userInfo?.academic?.map((academic) => ({
           institution_name: academic.institution_name || "",
           institution_board: academic.institution_board || "",
           id: academic.id || "",
@@ -180,7 +181,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
       ...formRef.current.values?.academics,
       { ...newInitialValues?.academics[0] },
     ]);
-    formRef.current.validateForm();
+    // formRef.current.validateForm();
   };
 
   const removeAcademicDetail = async (setFieldValue, index, id) => {
@@ -251,14 +252,14 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                       className=" border-2 border-slate-200/60 p-4 mt-2 "
                       key={index}
                     >
-                      <div className="grid grid-cols-4 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-5 gap-y-3">
                         <div className="hidden">
                           <Field
                             id={`id${index}`}
                             type="text"
                             className="form-control !none"
                             placeholder="company phone"
-                            name={`academics[${index}].id`}
+                            name={`academics.${index}?.id`}
                           />
                           <p
                             className="!text-red-800 font-bold"
@@ -266,7 +267,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                           >
                             <ErrorMessage
                               className="!text-red-600 font-bold"
-                              name={`academics[${index}].id`}
+                              name={`academics[${index}]?.id`}
                             />
                           </p>
                         </div>
@@ -367,7 +368,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                       </div>
                       <hr className="mt-2 sm:mt-4  p-1" />
 
-                      <div className="grid grid-cols-3 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`total_marks${index}`}
@@ -443,7 +444,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                       </div>
                       <hr className="mt-2 sm:mt-4 p-1" />
 
-                      <div className="grid grid-cols-3 gap-x-6 gap-y-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-5">
                         <div className="">
                           <label
                             htmlFor={`registration_year${index}`}
@@ -575,7 +576,7 @@ const AcademicForm = ({ candidate_id, activeTab, userInfo }) => {
                             removeAcademicDetail(
                               setFieldValue,
                               index - 1,
-                              userInfo?.academic[index].id
+                              userInfo?.academic[index]?.id
                             )
                           }
                         >

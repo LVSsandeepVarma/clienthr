@@ -76,7 +76,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
       userInfo?.experience?.length > 0
         ? userInfo?.experience?.map((experience) => ({
             company_name: experience.company_name || "",
-            id: experience.id,
+            id: experience?.id,
             company_phone: experience.company_phone || "",
             designation: experience.designation || "",
             from_date: experience.from_date || "",
@@ -106,8 +106,8 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
               id: experience.id,
               company_phone: experience.company_phone || "",
               designation: experience.designation || "",
-              from_date: experience.from_date || "",
-              to_date: experience.to_date || "",
+              from_date: experience.from_date?.split(" ")[0] || "",
+              to_date: experience.to_date?.split(" ")[0] || "",
               salary_month: experience.salary_month || "",
               experience: experience.experience || "",
               company_address: experience.company_address || "",
@@ -119,7 +119,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
             }))
           : [newInitialValues?.experiences[0]],
     });
-  }, [activeTab]);
+  }, [activeTab, userInfo]);
 
   const handleSubmit = async (values) => {
     console.log(
@@ -164,16 +164,21 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
   };
 
   const addAcademicDetail = (setFieldValue) => {
-    setFieldValue("experiences", [
+    setFieldValue("expericences", [
       ...formRef.current.values?.experiences,
       { ...newInitialValues?.experiences[0] },
     ]);
-    formRef.current.validateForm();
+    // formRef.current.validateForm();
   };
 
   const removeAcademicDetail = async (setFieldValue, index, id) => {
     const experiences = formRef?.current?.values?.experiences.slice();
     console.log(experiences);
+    console.log(id)
+    if(!id){
+      experiences.splice(index + 1, 1);
+      setFieldValue("experiences", experiences);
+    }else if(id){
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -195,7 +200,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
     } catch (err) {
       console.log(err);
       setApiErr([err?.response?.data?.errors]);
-    }
+    }}
   };
 
   return (
@@ -203,10 +208,10 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
-      enableReinitialize={true}
+      // enableReinitialize={true}
       innerRef={formRef}
     >
-      {({ values, resetForm, setFieldValue }) => (
+      {({ values, setFieldValue }) => (
         <>
           <Form>
             <FieldArray name="experiences">
@@ -224,8 +229,8 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                             class="btn btn-primary shadow-md mr-2"
                             onClick={() => addAcademicDetail(setFieldValue)}
                           >
-                            {" "}
-                            <AiOutlinePlus className="mr-2" /> Add New Product{" "}
+                            
+                            <AiOutlinePlus className="mr-2" /> Add New Product
                           </button>
                         )}{" "}
                       </div>
@@ -234,7 +239,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                       className="border-2 border-slate-200/60 p-4 mt-2 "
                       key={index}
                     >
-                      <div className="grid grid-cols-4 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`company_name_${index}`}
@@ -263,7 +268,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                             type="text"
                             className="form-control !none"
                             placeholder="company phone"
-                            name={`experiences[${index}].id`}
+                            name={`experiences[${index}]?.id`}
                           />
                           <p
                             className="!text-red-800 font-bold"
@@ -350,7 +355,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                       </div>
                       <hr className="mt-2 sm:mt-4  p-1" />
 
-                      <div className="grid grid-cols-3 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`to_date${index}`}
@@ -582,7 +587,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                             removeAcademicDetail(
                               setFieldValue,
                               index - 1,
-                              userInfo?.experience[index]?.id
+                              userInfo?.experience[index]?.id ? userInfo?.experience[index]?.id : null
                             )
                           }
                         >
