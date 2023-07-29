@@ -12,7 +12,8 @@ const experienceSchema = Yup.object().shape({
   company_name: Yup.string().required("Company name is required"),
   company_phone: Yup.string()
     .matches(/^[0-9]+$/, "Company phone should contain only numbers")
-    .required("Company phone is required"),
+    .required("Company phone is required")
+    .min(7,"min 7 digits are required").max(15,"maximum 15 digits are allowed"),
   designation: Yup.string().required("Designation is required"),
   from_date: Yup.string().required("From date required"),
   to_date: Yup.string().required("To date required"),
@@ -22,7 +23,7 @@ const experienceSchema = Yup.object().shape({
     .required("Experience in years required"),
   company_address: Yup.string()
     .matches(
-      /^[a-zA-Z ]+$/,
+      /^[a-zA-Z0-9 ]+$/,
       "Company address should contain only alphanumeric characters"
     )
     .required("Company address required"),
@@ -45,7 +46,7 @@ const experienceSchema = Yup.object().shape({
 });
 
 const validationSchema = Yup.object().shape({
-  experience: Yup.array().of(experienceSchema),
+  experiences: Yup.array().of(experienceSchema),
   // Add other validation rules for other fields if needed
 });
 
@@ -53,8 +54,8 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
   console.log("Experienceform");
   const [successMsg, setSuccessMsg] = useState("");
   const [apiErr, setApiErr] = useState([]);
-  console.log("userInfo", userInfo.academic.length);
-  const newInitialValues = {
+  console.log("userInfo", userInfo?.academic.length);
+  const [newInitialValues, setNewInitialValues] = useState({
     experiences: {
       company_name: "",
       company_phone: "",
@@ -70,57 +71,59 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
       company_pincode: "",
       company_email: "",
     },
-  };
+  });
   const [initialValues, setInitialValues] = useState({
     experiences:
-      userInfo?.experience?.map((experience) => ({
-        company_name: experience.company_name || "",
-        id: experience.id,
-        company_phone: experience.company_phone || "",
-        designation: experience.designation || "",
-        from_date: experience.from_date || "",
-        to_date: experience.to_date || "",
-        salary_month: experience.salary_month || "",
-        experience: experience.experience || "",
-        company_address: experience.company_address || "",
-        company_city: experience.company_city || "",
-        company_state: experience.company_state || "",
-        company_country: experience.company_country || "",
-        company_pincode: experience.company_pincode || "",
-        company_email: experience.company_email || "",
-      })) || [],
+      userInfo?.experience?.map((experience, ind) => ({
+            company_name: experience.company_name || "",
+            id: experience?.id,
+            company_phone: experience.company_phone || "",
+            designation: experience.designation || "",
+            from_date: experience.from_date || "",
+            to_date: experience.to_date || "",
+            salary_month: experience.salary_month || "",
+            experience: experience.experience || "",
+            company_address: experience.company_address || "",
+            company_city: experience.company_city || "",
+            company_state: experience.company_state || "",
+            company_country: experience.company_country || "",
+            company_pincode: experience.company_pincode || "",
+            company_email: experience.company_email || "",
+          })),
   });
 
   const formRef = React.createRef();
 
   useEffect(() => {
-    setInitialValues({
-      experiences:
-        userInfo?.experience?.map((experience) => ({
-          company_name: experience.company_name || "",
-          id: experience.id,
-          company_phone: experience.company_phone || "",
-          designation: experience.designation || "",
-          from_date: experience.from_date || "",
-          to_date: experience.to_date || "",
-          salary_month: experience.salary_month || "",
-          experience: experience.experience || "",
-          company_address: experience.company_address || "",
-          company_city: experience.company_city || "",
-          company_state: experience.company_state || "",
-          company_country: experience.company_country || "",
-          company_pincode: experience.company_pincode || "",
-          company_email: experience.company_email || "",
-        })) || [],
-    });
-  }, [activeTab]);
+    const defaultExperience = userInfo?.experience?.length > 0
+          ? userInfo?.experience?.map((experience) => ({
+              company_name: experience.company_name || "",
+              id: experience.id,
+              company_phone: experience.company_phone || "",
+              designation: experience.designation || "",
+              from_date: experience.from_date?.split(" ")[0] || "",
+              to_date: experience.to_date?.split(" ")[0] || "",
+              salary_month: experience.salary_month || "",
+              experience: experience.experience || "",
+              company_address: experience.company_address || "",
+              company_city: experience.company_city || "",
+              company_state: experience.company_state || "",
+              company_country: experience.company_country || "",
+              company_pincode: experience.company_pincode || "",
+              company_email: experience.company_email || "",
+            }))
+          : [{...newInitialValues?.experiences}]
+          setInitialValues({
+            experiences: defaultExperience
+          })
+  }, [activeTab, userInfo]);
 
   const handleSubmit = async (values) => {
     console.log(
       values,
-      values.experiences,
-      userInfo.experience.length,
-      values.experiences.slice(userInfo.experience.length)
+      values?.experiences,
+      userInfo?.experience.length,
+      values?.experiences.slice(userInfo?.experience.length)
     );
     setSuccessMsg("");
     setApiErr([]);
@@ -158,16 +161,25 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
   };
 
   const addAcademicDetail = (setFieldValue) => {
+    console.log([
+      ...formRef.current.values?.experiences,
+      { ...newInitialValues?.experiences },
+    ])
     setFieldValue("experiences", [
-      ...formRef.current.values.experiences,
-      { ...newInitialValues.experiences[0] },
+      ...formRef.current.values?.experiences,
+      { ...newInitialValues?.experiences },
     ]);
-    formRef.current.validateForm();
+    // formRef.current.validateForm();
   };
 
   const removeAcademicDetail = async (setFieldValue, index, id) => {
-    const experiences = formRef.current.values.experiences.slice();
+    const experiences = formRef?.current?.values?.experiences.slice();
     console.log(experiences);
+    console.log(id)
+    if(!id){
+      experiences.splice(index + 1, 1);
+      setFieldValue("experiences", experiences);
+    }else if(id){
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -179,17 +191,17 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
           },
         }
       );
-      console.log(response.data);
-      if (response?.data?.status) {
-        const fetchUserInfoResponse = await axios.get("");
-      }
+      console.log(response?.data);
+      // if (response?.data?.status) {
+      //   const fetchUserInfoResponse = await axios.get("");
+      // }
       experiences.splice(index + 1, 1);
       setFieldValue("experiences", experiences);
       formRef.current.validateForm();
     } catch (err) {
       console.log(err);
       setApiErr([err?.response?.data?.errors]);
-    }
+    }}
   };
 
   return (
@@ -200,26 +212,29 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
       enableReinitialize={true}
       innerRef={formRef}
     >
-      {({ values, resetForm, setFieldValue }) => (
+      {({ values, setFieldValue }) => (
         <>
           <Form>
             <FieldArray name="experiences">
               {/* {({ remove, push}) =>{ */}
               <>
-                {values.experiences.map((experiences, index) => (
+              {console.log(values?.experiences)}
+                {values?.experiences?.map((experiences, index) => (
                   <>
                     <div className="flex mt-2">
                       <p className=" flex w-full font-bold text-lg text-blue-900">
                         Experience details - {index + 1}
                       </p>
                       <div class="w-full flex justify-end items-center ">
-                        {index == 0 && (
+                        {!index  && (
                           <button
-                            class="btn btn-primary shadow-md mr-2"
+                          type="button"
+                            className="!bg-[#00195f] btn btn-primary font-bold !text-white shadow-md mr-2"
+                            style={{background : "rgb(0, 23, 86)!important"}}
                             onClick={() => addAcademicDetail(setFieldValue)}
                           >
-                            {" "}
-                            <AiOutlinePlus className="mr-2" /> Add New Product{" "}
+                            
+                            <AiOutlinePlus className="mr-2" /> Add New Product
                           </button>
                         )}{" "}
                       </div>
@@ -228,7 +243,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                       className="border-2 border-slate-200/60 p-4 mt-2 "
                       key={index}
                     >
-                      <div className="grid grid-cols-4 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`company_name_${index}`}
@@ -257,7 +272,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                             type="text"
                             className="form-control !none"
                             placeholder="company phone"
-                            name={`experiences[${index}].id`}
+                            name={`experiences[${index}]?.id`}
                           />
                           <p
                             className="!text-red-800 font-bold"
@@ -344,7 +359,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                       </div>
                       <hr className="mt-2 sm:mt-4  p-1" />
 
-                      <div className="grid grid-cols-3 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`to_date${index}`}
@@ -576,7 +591,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                             removeAcademicDetail(
                               setFieldValue,
                               index - 1,
-                              userInfo.experience[index]?.id
+                              userInfo?.experience[index]?.id ? userInfo?.experience[index]?.id : null
                             )
                           }
                         >
@@ -607,7 +622,7 @@ const ExperienceForm = ({ candidate_id, activeTab, userInfo }) => {
                   )}
                   {apiErr?.length > 0 &&
                     apiErr?.map((val, ind) => {
-                      return Object?.values(val).map((er, ind) => (
+                      return Object?.values(val)?.map((er, ind) => (
                         <p className="font-bold" style={{ color: "red" }}>
                           {er}
                         </p>

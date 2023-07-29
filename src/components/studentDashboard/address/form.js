@@ -9,13 +9,13 @@ import { BsTrash3 } from "react-icons/bs";
 import { AiOutlinePlus } from "react-icons/ai";
 
 const addressSchema = Yup.object().shape({
-  street_1: Yup.string().required("Street 1 is required"),
+  street_1: Yup.string().matches(/^[A-Za-z0-9. ]+$/, "Street 1 should contain only alphanumaricals").required("Street 1 is required"),
   street_2: Yup.string(),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State required"),
-  pincode: Yup.string().required("Pincode required"),
-  country: Yup.string().required("Country required"),
-  address_type: Yup.string().required("Address Type required"),
+  city: Yup.string().matches(/^[A-Za-z ]+$/, "City should contain only alphabets").required("City is required"),
+  state: Yup.string().matches(/^[A-Za-z ]+$/, "State should contain only alphabets").required("State required"),
+  pincode: Yup.string().matches(/^[0-9 ]+$/, "Pincode should contain only numaricals").required("Pincode required"),
+  country: Yup.string().matches(/^[A-Za-z ]+$/, "Country should contain only alphabets").required("Country required"),
+  address_type: Yup.string().matches(/^[A-Za-z ]+$/, "Address type name should contain only alphabets").required("Address Type required"),
 });
 
 const validationSchema = Yup.object().shape({
@@ -28,8 +28,9 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
   const [successMsg, setSuccessMsg] = useState("");
   const [apiErr, setApiErr] = useState([]);
   console.log("userInfo", userInfo?.address);
-  const newInitialValues = {
+  const [newInitialValues, setNewInitialValues] = useState({
     address: {
+      street_1:"",
       street_2: "",
       city: "",
       state: "",
@@ -37,38 +38,42 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
       country: "",
       address_type: "",
     },
-  };
+  });
   const [initialValues, setInitialValues] = useState({
     address:
-      userInfo?.address?.map((addr) => ({
-        street_1: addr.street_1 || "",
-        street_2: addr.street_2 || "",
-        id: addr.id || "",
-        city: addr.city || "",
-        state: addr.state || "",
-        pincode: addr.pincode || "",
-        country: addr.country || "",
-        address_type: addr.address_type || "",
-      })) || [],
+    userInfo?.address?.map((addr, ind) => ({
+      street_1: addr.street_1 || "",
+      street_2: addr.street_2 || "",
+      id: addr?.id || "",
+      city: addr.city || "",
+      state: addr.state || "",
+      pincode: addr.pincode || "",
+      country: addr.country || "",
+      address_type: addr.address_type || "",
+    })),
   });
 
   const formRef = React.createRef();
 
   useEffect(() => {
+    // Set default values for address if userInfo?.address is undefined or empty
+    const defaultAddress = userInfo?.address?.length > 0
+      ? userInfo?.address?.map((addr) => ({
+        street_1: addr.street_1 || "",
+        street_2: addr.street_2 || "",
+        id: addr?.id || "",
+        city: addr.city || "",
+        state: addr.state || "",
+        pincode: addr.pincode || "",
+        country: addr.country || "",
+        address_type: addr.address_type || "",
+      }))
+      : [{ ...newInitialValues.address }]; // Use an array with default address values
+
     setInitialValues({
-      address:
-        userInfo?.address?.map((addr) => ({
-          street_1: addr.street_1 || "",
-          street_2: addr.street_2 || "",
-          id: addr.id || "",
-          city: addr.city || "",
-          state: addr.state || "",
-          pincode: addr.pincode || "",
-          country: addr.country || "",
-          address_type: addr.address_type || "",
-        })) || [],
+      address: defaultAddress,
     });
-  }, [activeTab]);
+  }, [activeTab, userInfo]);
 
   const handleSubmit = async (values) => {
     console.log(values);
@@ -110,18 +115,24 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
 
   const addAcademicDetail = (setFieldValue) => {
     setFieldValue("address", [
-      ...formRef.current.values.address,
-      { ...newInitialValues.address[0] },
+      ...formRef.current.values?.address,
+      { ...newInitialValues?.address },
     ]);
-    formRef.current.validateForm();
+    // formRef.current.validateForm();
   };
 
   const removeAcademicDetail = async (setFieldValue, index, id) => {
-    const address = formRef.current.values.address.slice();
+    const address = formRef.current.values?.address.slice();
     console.log(address);
-
+    if(!id){
+      address.splice(index + 1, 1);
+      setFieldValue("address", address);
+      formRef.current.validateForm();
+    }
+    else if (id){
     try {
       const token = localStorage.getItem("token");
+
       const response = await axios.post(
         "https://hrmbackdoor.globalcrmsoftware.com/api/hrm-candidate/address/remove",
         { address_id: id },
@@ -139,6 +150,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
       console.log(err);
       setApiErr([err?.response?.data?.errors]);
     }
+  }
   };
 
   return (
@@ -155,29 +167,31 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
             <FieldArray name="address">
               {/* {({ remove, push}) =>{ */}
               <>
-                {values.address.map((address, index) => (
+                {values?.address?.map((address, index) => (
                   <>
                     <div className="flex mt-2">
                       <p className=" flex w-full font-bold text-lg text-blue-900">
                         Address details - {index + 1}
                       </p>
                       <div class="w-full flex justify-end items-center ">
-                        {index == 0 && (
+                      {!index  && (
                           <button
-                            class="btn btn-primary shadow-md mr-2"
+                          type="button"
+                            className="!bg-[#00195f] btn btn-primary font-bold !text-white shadow-md mr-2"
+                            style={{background : "rgb(0, 23, 86)!important"}}
                             onClick={() => addAcademicDetail(setFieldValue)}
                           >
-                            {" "}
-                            <AiOutlinePlus className="mr-2" /> Add New Product{" "}
+                            
+                            <AiOutlinePlus className="mr-2" /> Add New Product
                           </button>
-                        )}{" "}
+                        )}
                       </div>
                     </div>
                     <div
                       className="border-2 border-slate-200/60 p-4 mt-2 "
                       key={index}
                     >
-                      <div className="grid grid-cols-4 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`street_1_${index}`}
@@ -206,7 +220,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                             type="text"
                             className="form-control !none"
                             placeholder="id"
-                            name={`address[${index}].id`}
+                            name={`address[${index}]?.id`}
                           />
                           <p
                             className="!text-red-800 font-bold"
@@ -293,7 +307,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                       </div>
                       <hr className="mt-2 sm:mt-4  p-1" />
 
-                      <div className="grid grid-cols-3 gap-x-5 gap-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-3">
                         <div className="">
                           <label
                             htmlFor={`pincode${index}`}
@@ -376,7 +390,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                             removeAcademicDetail(
                               setFieldValue,
                               index - 1,
-                              userInfo.address[index].id
+                              userInfo?.address[index]?.id
                             )
                           }
                         >
@@ -407,7 +421,7 @@ const AddressForm = ({ candidate_id, activeTab, userInfo }) => {
                   )}
                   {apiErr?.length > 0 &&
                     apiErr?.map((val, ind) => {
-                      return Object?.values(val).map((er, ind) => (
+                      return Object?.values(val)?.map((er, ind) => (
                         <p className="font-bold" style={{ color: "red" }}>
                           {er}
                         </p>

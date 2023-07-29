@@ -9,6 +9,27 @@
     color: #120fb1 !important;
 }
 
+.react-tagsinput--focused{
+  /* background-color: #ccd2df !important; */
+    border: 1px solid #d3d3d3 !important;
+    color: #fff !important;
+}
+
+.react-tagsinput-input {
+  background: transparent;
+  border: none !important;
+  color: #777;
+  font-family: sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  margin-bottom: 6px;
+  margin-top: 1px;
+  outline: none;
+  padding: 5px;
+  width: 80px;
+  box-shadow: none !important;
+}
+
 .tooltip::before {
   content: '';
   position: absolute;
@@ -24,3 +45,6 @@
   visibility: visible;
   opacity: 1;
 }
+
+
+
